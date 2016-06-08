@@ -75,6 +75,8 @@ static int tcp_open(URLContext *h, const char *uri, int flags)
     char portstr[10];
     s->open_timeout = 5000000;
 
+    av_log(NULL, AV_LOG_DEBUG, "tcp_open %s \n", uri);
+
     av_url_split(proto, sizeof(proto), NULL, 0, hostname, sizeof(hostname),
         &port, path, sizeof(path), uri);
     if (strcmp(proto, "tcp"))

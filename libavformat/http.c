@@ -227,9 +227,9 @@ static int http_open_cnx_internal(URLContext *h, AVDictionary **options)
     }
 
     // parse domain in url 
-    char* domain = strstr(path, "&domain=");
+    char* domain = strstr(path, "domain=");
     if (domain) {
-        domain += 8; //skip "&domain="
+        domain += 7; //skip "&domain="
         char* end = strchr(domain, '&');
         int domain_len = 0;
         if (end) {

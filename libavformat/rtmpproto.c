@@ -2605,9 +2605,9 @@ static int rtmp_open(URLContext *s, const char *uri, int flags)
     }
 
     // parse domain in url 
-    char* domain = strstr(path, "&domain=");
+    char* domain = strstr(path, "domain=");
     if (domain) {
-        domain += 8; //skip "&domain="
+        domain += 7; //skip "&domain="
         char* end = strchr(domain, '&');
         int domain_len = 0;
         if (end) {
