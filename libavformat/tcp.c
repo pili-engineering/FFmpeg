@@ -121,6 +121,11 @@ static int tcp_open(URLContext *h, const char *uri, int flags)
         return AVERROR(EIO);
     }
 
+    if (ai->ai_family == AF_INET6) {
+        struct sockaddr_in6 *in6 = (struct sockaddr_in6 *)ai->ai_addr;
+        in6->sin6_port = htons(port);
+    }
+
     cur_ai = ai;
 
  restart:
