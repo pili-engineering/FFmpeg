@@ -121,6 +121,12 @@ static int tcp_open(URLContext *h, const char *uri, int flags)
         return AVERROR(EIO);
     }
 
+    // 在 ipv6 的环境下，使用 ipv4 的地址， port 需要多设置一次
+    if (ai->ai_family == AF_INET6) {
+        struct sockaddr_in6 *in6 = (struct sockaddr_in6 *)ai->ai_addr;
+        in6->sin6_port = htons(port);
+    }
+
     cur_ai = ai;
 
  restart:
