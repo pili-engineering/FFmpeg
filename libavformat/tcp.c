@@ -32,14 +32,6 @@
 #include <poll.h>
 #endif
 
-typedef struct PLStatistic {
-    void *opaque;
-    int dns_time;
-    int connect_time;
-    int64_t first_time;
-    char ip[128];
-} PLStatistic;
-
 typedef struct TCPContext {
     const AVClass *class;
     int fd;

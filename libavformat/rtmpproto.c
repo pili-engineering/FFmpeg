@@ -33,6 +33,7 @@
 #include "libavutil/md5.h"
 #include "libavutil/opt.h"
 #include "libavutil/random_seed.h"
+#include "libavutil/time.h"
 #include "avformat.h"
 #include "internal.h"
 
@@ -2577,6 +2578,8 @@ static int inject_fake_duration_metadata(RTMPContext *rt)
  */
 static int rtmp_open(URLContext *s, const char *uri, int flags)
 {
+    struct PLStatistic *stat = s ? s->interrupt_callback.opaque : NULL;
+    int64_t t1, t2;
     RTMPContext *rt = s->priv_data;
     char proto[8], hostname[256], path[1024], auth[100], *fname;
     char *old_app, *qmark, *n, fname_buffer[1024];
@@ -2820,6 +2823,8 @@ reconnect:
 
     av_log(s, AV_LOG_DEBUG, "Proto = %s, path = %s, app = %s, fname = %s\n",
            proto, path, rt->app, rt->playpath);
+    
+    t1 = av_gettime();
     if (!rt->listen) {
         if ((ret = gen_connect(s, rt)) < 0)
             goto fail;
@@ -2833,6 +2838,11 @@ reconnect:
     } while (ret == AVERROR(EAGAIN));
     if (ret < 0)
         goto fail;
+
+    t2 = av_gettime();
+    if (stat != NULL) {
+        stat->rtmp_time = (t2 - t1) / 1000;
+    }
 
     if (rt->do_reconnect) {
         int i;
