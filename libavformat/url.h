@@ -35,6 +35,15 @@
 
 extern const AVClass ffurl_context_class;
 
+typedef struct PLStatistic {
+    void *opaque;
+    int dns_time;
+    int connect_time;
+    int rtmp_time;
+    int64_t first_time;
+    char ip[128];
+} PLStatistic;
+
 typedef struct URLContext {
     const AVClass *av_class;    /**< information for av_log(). Set by url_open(). */
     const struct URLProtocol *prot;
