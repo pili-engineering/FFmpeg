@@ -48,6 +48,13 @@ typedef struct URLContext {
     int64_t rw_timeout;         /**< maximum time to wait for (network) read/write operation completion, in mcs */
     const char *protocol_whitelist;
     const char *protocol_blacklist;
+
+    int dns_time;
+    int tcp_connect_time;
+    int64_t first_time;
+    char remote_ip[128];
+    int rtmp_connect_time;
+    
 } URLContext;
 
 typedef struct URLProtocol {

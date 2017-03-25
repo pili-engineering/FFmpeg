@@ -53,6 +53,11 @@ static void *ff_avio_child_next(void *obj, void *prev)
     return prev ? NULL : internal->h;
 }
 
+struct URLContext *avio_url_context(struct AVIOContext *s) {
+    AVIOInternal *internal = s->opaque;
+    return internal ? internal->h : NULL;
+}
+
 static const AVClass *ff_avio_child_class_next(const AVClass *prev)
 {
     return prev ? NULL : &ffurl_context_class;

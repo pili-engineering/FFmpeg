@@ -33,6 +33,7 @@
 #include "libavutil/md5.h"
 #include "libavutil/opt.h"
 #include "libavutil/random_seed.h"
+#include "libavutil/time.h"
 #include "avformat.h"
 #include "internal.h"
 
@@ -2585,6 +2586,7 @@ static int rtmp_open(URLContext *s, const char *uri, int flags)
     int port;
     AVDictionary *opts = NULL;
     int ret;
+    int64_t t1, t2;
 
     if (rt->listen_timeout > 0)
         rt->listen = 1;
@@ -2675,6 +2677,11 @@ reconnect:
         av_log(s , AV_LOG_ERROR, "Cannot open connection %s\n", buf);
         goto fail;
     }
+
+    s->dns_time = rt->stream->dns_time;
+    s->tcp_connect_time = rt->stream->tcp_connect_time;
+    s->first_time = rt->stream->first_time;
+    memcpy(s->remote_ip, rt->stream->remote_ip, 128);
 
     if (rt->swfverify) {
         if ((ret = rtmp_calc_swfhash(s)) < 0)
@@ -2820,6 +2827,7 @@ reconnect:
 
     av_log(s, AV_LOG_DEBUG, "Proto = %s, path = %s, app = %s, fname = %s\n",
            proto, path, rt->app, rt->playpath);
+    t1 = av_gettime();
     if (!rt->listen) {
         if ((ret = gen_connect(s, rt)) < 0)
             goto fail;
@@ -2833,6 +2841,10 @@ reconnect:
     } while (ret == AVERROR(EAGAIN));
     if (ret < 0)
         goto fail;
+    
+    t2 = av_gettime();
+    s->rtmp_connect_time = (t2 - t1) / 1000;
+    s->first_time = rt->stream->first_time;
 
     if (rt->do_reconnect) {
         int i;

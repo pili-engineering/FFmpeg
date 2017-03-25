@@ -73,7 +73,13 @@ static int tcp_open(URLContext *h, const char *uri, int flags)
     int ret;
     char hostname[1024],proto[1024],path[1024];
     char portstr[10];
+    int64_t t1, t2;
     s->open_timeout = 5000000;
+    h->dns_time = 0;
+    h->tcp_connect_time = 0;
+    h->rtmp_connect_time = 0;
+    h->first_time = 0;
+    memset(h->remote_ip, 0, sizeof(h->remote_ip));
 
     av_log(NULL, AV_LOG_DEBUG, "tcp_open %s \n", uri);
 
@@ -110,6 +116,7 @@ static int tcp_open(URLContext *h, const char *uri, int flags)
     snprintf(portstr, sizeof(portstr), "%d", port);
     if (s->listen)
         hints.ai_flags |= AI_PASSIVE;
+    t1 = av_gettime();
     if (!hostname[0])
         ret = getaddrinfo(NULL, portstr, &hints, &ai);
     else
@@ -120,11 +127,17 @@ static int tcp_open(URLContext *h, const char *uri, int flags)
                hostname, gai_strerror(ret));
         return AVERROR(EIO);
     }
+    t2 = av_gettime();
+    h->dns_time = (t2 - t1) / 1000;
 
     // 在 ipv6 的环境下，使用 ipv4 的地址， port 需要多设置一次
     if (ai->ai_family == AF_INET6) {
         struct sockaddr_in6 *in6 = (struct sockaddr_in6 *)ai->ai_addr;
         in6->sin6_port = htons(port);
+        inet_ntop(AF_INET6, (void *)&in6->sin6_addr, h->remote_ip, 128);
+    } else {
+        struct sockaddr_in *in = (struct sockaddr_in *)ai->ai_addr;
+        inet_ntop(AF_INET, (void *)&in->sin_addr, h->remote_ip, 128);
     }
 
     cur_ai = ai;
@@ -150,6 +163,7 @@ static int tcp_open(URLContext *h, const char *uri, int flags)
         // Socket descriptor already closed here. Safe to overwrite to client one.
         fd = ret;
     } else {
+        t1 = av_gettime();
         if ((ret = ff_listen_connect(fd, cur_ai->ai_addr, cur_ai->ai_addrlen,
                                      s->open_timeout / 1000, h, !!cur_ai->ai_next)) < 0) {
 
@@ -158,6 +172,8 @@ static int tcp_open(URLContext *h, const char *uri, int flags)
             else
                 goto fail;
         }
+        t2 = av_gettime();
+        h->tcp_connect_time = (t2 - t1)/1000;
     }
 
     h->is_streamed = 1;
@@ -217,6 +233,9 @@ static int tcp_read(URLContext *h, uint8_t *buf, int size)
             return ret;
     }
     ret = recv(s->fd, buf, size, 0);
+    if (h->first_time == 0 && ret) {
+        h->first_time = av_gettime() / 1000;
+    }
     return ret < 0 ? ff_neterrno() : ret;
 }
 

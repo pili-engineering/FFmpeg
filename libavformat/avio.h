@@ -261,6 +261,8 @@ typedef struct AVIOContext {
     const char *protocol_blacklist;
 } AVIOContext;
 
+struct URLContext *avio_url_context(struct AVIOContext *s);
+
 /* unbuffered I/O */
 
 /**

@@ -582,6 +582,16 @@ int avformat_open_input(AVFormatContext **ps, const char *filename,
         av_dict_free(options);
         *options = tmp;
     }
+
+    URLContext *url = avio_url_context(s->pb);
+    if (url) {
+        av_dict_set_int(&s->metadata, "dns_time", url->dns_time, 0);
+        av_dict_set_int(&s->metadata, "tcp_connect_time", url->tcp_connect_time, 0);
+        av_dict_set_int(&s->metadata, "rtmp_connect_time", url->rtmp_connect_time, 0);
+        av_dict_set_int(&s->metadata, "first_time", url->first_time, 0);
+        av_dict_set(&s->metadata, "remote_ip", url->remote_ip, 0);
+    }
+
     *ps = s;
     return 0;
 
