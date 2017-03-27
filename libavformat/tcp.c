@@ -78,7 +78,7 @@ static int tcp_open(URLContext *h, const char *uri, int flags)
     h->dns_time = 0;
     h->tcp_connect_time = 0;
     h->rtmp_connect_time = 0;
-    h->first_time = 0;
+    h->first_byte_time = 0;
     memset(h->remote_ip, 0, sizeof(h->remote_ip));
 
     av_log(NULL, AV_LOG_DEBUG, "tcp_open %s \n", uri);
@@ -233,8 +233,8 @@ static int tcp_read(URLContext *h, uint8_t *buf, int size)
             return ret;
     }
     ret = recv(s->fd, buf, size, 0);
-    if (h->first_time == 0 && ret) {
-        h->first_time = av_gettime() / 1000;
+    if (h->first_byte_time == 0 && ret > 0) {
+        h->first_byte_time = av_gettime() / 1000;
     }
     return ret < 0 ? ff_neterrno() : ret;
 }

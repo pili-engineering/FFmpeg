@@ -51,7 +51,7 @@ typedef struct URLContext {
 
     int dns_time;
     int tcp_connect_time;
-    int64_t first_time;
+    int64_t first_byte_time;
     char remote_ip[128];
     int rtmp_connect_time;
     

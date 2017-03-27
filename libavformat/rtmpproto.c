@@ -2680,7 +2680,7 @@ reconnect:
 
     s->dns_time = rt->stream->dns_time;
     s->tcp_connect_time = rt->stream->tcp_connect_time;
-    s->first_time = rt->stream->first_time;
+    s->first_byte_time = rt->stream->first_byte_time;
     memcpy(s->remote_ip, rt->stream->remote_ip, 128);
 
     if (rt->swfverify) {
@@ -2844,7 +2844,7 @@ reconnect:
     
     t2 = av_gettime();
     s->rtmp_connect_time = (t2 - t1) / 1000;
-    s->first_time = rt->stream->first_time;
+    s->first_byte_time = rt->stream->first_byte_time;
 
     if (rt->do_reconnect) {
         int i;
